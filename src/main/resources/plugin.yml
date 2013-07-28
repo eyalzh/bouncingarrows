@@ -1,0 +1,4 @@
+name: BouncingArrows
+main: org.samson.bukkit.plugin.bouncingarrows.BouncingArrows
+version: ${project.version}
+
