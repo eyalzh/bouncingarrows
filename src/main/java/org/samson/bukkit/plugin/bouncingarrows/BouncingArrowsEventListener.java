@@ -43,7 +43,12 @@ public class BouncingArrowsEventListener implements Listener {
 			ItemStack theBow = event.getBow();
 			
 			if (theBow.hasItemMeta() && theBow.getItemMeta().hasEnchant(Enchantment.SILK_TOUCH)) {
-				projectile.setMetadata("bouncing", new FixedMetadataValue(plugin, event.getForce()));
+				
+				Player player = (Player) entity;
+				
+				if (player.hasPermission("bouncingarrows.use")) {
+					projectile.setMetadata("bouncing", new FixedMetadataValue(plugin, event.getForce()));
+				}
 			}
 			
 		}
@@ -57,10 +62,9 @@ public class BouncingArrowsEventListener implements Listener {
 		
 		LivingEntity shooter = entity.getShooter();
 		
-		if (shooter != null 
-				&& shooter instanceof Player 
-				&& entity.getType() == EntityType.ARROW
-				&& entity.hasMetadata("bouncing")) {
+		if (shooter instanceof Player 
+			&& entity.getType() == EntityType.ARROW
+			&& entity.hasMetadata("bouncing")) {
 
 			Vector arrowVector = entity.getVelocity();
 			

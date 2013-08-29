@@ -2,3 +2,9 @@ name: BouncingArrows
 main: org.samson.bukkit.plugin.bouncingarrows.BouncingArrows
 version: ${project.version}
 
+permissions:
+
+   bouncingarrows.use:
+      description: Allows you to shoot bouncing arrows (default to everyone)
+      default: true
+

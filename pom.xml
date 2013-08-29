@@ -4,7 +4,7 @@
 	<groupId>org.samson.bukkit.plugin.bouncingarrows</groupId>
 	<artifactId>BouncingArrows</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0</version>
+	<version>1.1</version>
 	<name>BouncingArrows</name>
 	<url>http://maven.apache.org</url>
 	<properties>
