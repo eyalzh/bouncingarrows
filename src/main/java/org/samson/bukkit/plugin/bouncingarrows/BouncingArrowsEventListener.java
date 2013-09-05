@@ -26,6 +26,9 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 
 public class BouncingArrowsEventListener implements Listener {
 
+	public static final double MIN_MAGNITUDE_THRESHOLD = 0.6;
+	public static final int MAX_BOUNCE_COUNT = 4;
+	
 	private BouncingArrows plugin;
 
 	public BouncingArrowsEventListener(BouncingArrows plugin) {
@@ -47,7 +50,9 @@ public class BouncingArrowsEventListener implements Listener {
 				Player player = (Player) entity;
 				
 				if (player.hasPermission("bouncingarrows.use")) {
-					projectile.setMetadata("bouncing", new FixedMetadataValue(plugin, event.getForce()));
+					final int enchantmentLevel = theBow.getItemMeta().getEnchantLevel(Enchantment.SILK_TOUCH);
+					final int bouncingCount = Math.max(1, Math.min(enchantmentLevel, MAX_BOUNCE_COUNT));					
+					projectile.setMetadata("bouncing", new FixedMetadataValue(plugin, bouncingCount));
 				}
 			}
 			
@@ -68,6 +73,15 @@ public class BouncingArrowsEventListener implements Listener {
 
 			Vector arrowVector = entity.getVelocity();
 			
+			final double magnitude = Math.sqrt(
+					Math.pow(arrowVector.getX(), 2) +
+					Math.pow(arrowVector.getY(), 2) + 
+					Math.pow(arrowVector.getZ(), 2)); 
+
+			if (magnitude < MIN_MAGNITUDE_THRESHOLD) {
+				return;
+			}
+
 			Location hitLoc = entity.getLocation();
 			
 			BlockIterator b = new BlockIterator(hitLoc.getWorld(), 
@@ -87,27 +101,36 @@ public class BouncingArrowsEventListener implements Listener {
 			BlockFace blockFace = nextBlock.getFace(blockBefore);
 
 			if (blockFace != null) {
-
+				
+				// Convert blockFace SELF to UP:
+				if (blockFace == BlockFace.SELF) {
+					blockFace = BlockFace.UP;
+				}
+				
 				Vector hitPlain = new Vector(blockFace.getModX(), blockFace.getModY(), blockFace.getModZ());
 				
 				double dotProduct = arrowVector.dot(hitPlain);
 				Vector u = hitPlain.multiply(dotProduct).multiply(2.0);
-				
-				float speed = 0.6F;
-				
-				List<MetadataValue> metaDataValues = entity.getMetadata("bouncing");
-				if (metaDataValues.size() > 0) {
-					speed = metaDataValues.get(0).asFloat();
-					speed *= 1.25F;
-				}
+
+				float speed = (float) magnitude;
+				speed *= 0.6F;
 				
 				Arrow newArrow = entity.getWorld().spawnArrow(entity.getLocation(), arrowVector.subtract(u), speed, 12.0F);
+
+				List<MetadataValue> metaDataValues = entity.getMetadata("bouncing");
+				if (metaDataValues.size() > 0) {
+					int prevBouncingRate = metaDataValues.get(0).asInt();
+					if (prevBouncingRate > 1) {
+						newArrow.setMetadata("bouncing", new FixedMetadataValue(plugin, prevBouncingRate - 1));
+					}
+				}
+				
 				newArrow.setShooter(shooter);
 				newArrow.setFireTicks(entity.getFireTicks());
 			
 				entity.remove();
 				
-			}
+			} 
 		
 		}
 	}	
